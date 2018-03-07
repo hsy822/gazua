@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Gazua</title>
+</head>
+<script src="js/web3.min.js"></script>
+<script src="http://code.jquery.com/jquery-latest.js "></script>
+<style>
+table tbody{
+  text-align: center
+}
+</style>
+<body>
+  <div>
+    <h1>Gazua</h1>
+  </div>
+  <h2>ETH WALLET</h2>
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th>address</th>
+          <th>balance</th>
+        </tr>
+      </thead>
+      <tbody id="dataBody">
+        <tr>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <h2>Create Account</h2>
+  <div>
+    <button id="createBtn">New Account</button>
+  </div>
+  <h2>SEND ETH</h2>
+  <div>
+    <input id='fromInput' placeholder='from'/>
+    <input id='toInput' placeholder='to'/>
+    <input id='amountInput' placeholder='amount'/>
+    <button id='sendBtn'>SEND</button>
+  </div>
+  <h2>Result of Transaction</h2>
+  <div>
+    <ul id='infoUl'>
+    </ul>
+  </div>
+  <script>
+    // 로컬의 testrpc 노드로 연결
+    web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"))
+
+    // testrpc에 임시로 생성된 계정 정보
+    let redirect = () => {
+      let accounts = web3.eth.accounts
+      $('#dataBody').html('')
+      accounts.map(item => {
+        $('#dataBody').append('<tr><td>'+item+'</td><td>'+web3.fromWei(web3.eth.getBalance(item))+'</td></tr>')
+      })
+    }
+
+    redirect()
+
+    // for using smart-contract from remix(browser-solidity)
+    // application binary interface
+    // let ABI = [{
+    //     "constant": true,
+    //     "inputs": [],
+    //     "name": "get",
+    //     "outputs": [{
+    //       "name": "",
+    //       "type": "uint256"
+    //     }],
+    //     "payable": false,
+    //     "stateMutability": "view",
+    //     "type": "function"
+    //   },
+    //   {
+    //     "constant": false,
+    //     "inputs": [{
+    //       "name": "x",
+    //       "type": "uint256"
+    //     }],
+    //     "name": "set",
+    //     "outputs": [],
+    //     "payable": false,
+    //     "stateMutability": "nonpayable",
+    //     "type": "function"
+    //   }
+    // ]
+
+    // let Contract = web3.eth.contract(ABI)
+    // console.log(Contract)
+    //
+    // let myContract = Contract.at('0x59fe8a9b3b66cd5565feca4f1037e509b684173e')
+    // console.log(myContract)
+
+    // 데이터 조회(get)가 아닌, 데이터 추가,변경,삭제 시에는 이더가 소모됨.
+    // 조회는 query 발생, 추가, 변경, 삭제는 transaction 발생
+    // 따라서 이더를 소모할 defaultAccount 지정해야됨.
+    // web3.eth.defaultAccount = web3.eth.accounts[0]
+    //
+    // myContract.set(26)
+    //
+    // let getFunction = myContract.get()
+    // console.log(getFunction)
+
+    // sendTransaction
+    let sendTx = () => {
+      var transactionObj = {
+        from: $('#fromInput').val(),
+        to: $('#toInput').val(),
+        value: web3.toWei($('#amountInput').val())
+      }
+      web3.eth.sendTransaction(transactionObj, (err, res)=>{
+        err? console.log(err) : getTransactionInfo(res)
+      })
+    }
+
+    // transaction success function
+    let getTransactionInfo = (res) => {
+      var info = web3.eth.getTransaction(res)
+      var li = '<li>BlockHash: '+info.blockHash +'</li>'
+          li += '<li>From: '+info.from +'</li>'
+          li += '<li>Gas: '+info.gas +'</li>'
+          li += '<li>Value: '+web3.fromWei(info.value) +'</li>'
+          li += '<li>To: '+info.to +'</li>'
+      $('#infoUl').html(li)
+      redirect()
+    }
+
+    $('#sendBtn').on('click', sendTx)
+
+    let createAccount = () => {
+      let pass = 'test'
+      newAccount = web3.personal.newAccount(pass)
+      web3.personal.unlockAccount(newAccount, pass)
+      redirect()
+    }
+
+    $('#createBtn').on('click', createAccount)
+
+  </script>
+</body>
+
+</html>
