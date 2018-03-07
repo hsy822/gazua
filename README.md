@@ -31,3 +31,5 @@ contract SimpleStorage {
 ```
 
 - run -> environment : web3 providers -> endpoint : http://localhost:8545
+- create
+- 배포된 contract 주소 복사 후 사용(index.html 98 line)
