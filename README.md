@@ -1,4 +1,4 @@
-# gazua
+# testrpc
 
 ## How to start
 > npm install -g ethereumjs-testrpc
